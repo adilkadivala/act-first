@@ -1,0 +1,425 @@
+{
+  "history": [
+    {
+      "id": "r1",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-16T09:14:00+05:30",
+      "dropAt": "2026-03-16T09:42:00+05:30",
+      "fare": 281,
+      "durationMins": 28
+    },
+    {
+      "id": "r2",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-17T09:12:00+05:30",
+      "dropAt": "2026-03-17T09:39:00+05:30",
+      "fare": 268,
+      "durationMins": 27
+    },
+    {
+      "id": "r3",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-18T09:17:00+05:30",
+      "dropAt": "2026-03-18T09:52:00+05:30",
+      "fare": 214,
+      "durationMins": 35
+    },
+    {
+      "id": "r4",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-19T09:16:00+05:30",
+      "dropAt": "2026-03-19T09:47:00+05:30",
+      "fare": 289,
+      "durationMins": 31
+    },
+    {
+      "id": "r5",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-20T09:13:00+05:30",
+      "dropAt": "2026-03-20T09:36:00+05:30",
+      "fare": 142,
+      "durationMins": 23
+    },
+    {
+      "id": "r6",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "Pulse Fit Gym - Indiranagar",
+      "pickupAt": "2026-03-14T10:02:00+05:30",
+      "dropAt": "2026-03-14T10:26:00+05:30",
+      "fare": 196,
+      "durationMins": 24
+    },
+    {
+      "id": "r7",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "ActFirst HQ - HSR Layout",
+      "destination": "Home - Koramangala 6th Block",
+      "pickupAt": "2026-03-16T18:34:00+05:30",
+      "dropAt": "2026-03-16T19:12:00+05:30",
+      "fare": 302,
+      "durationMins": 38
+    },
+    {
+      "id": "r8",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "ActFirst HQ - HSR Layout",
+      "destination": "Home - Koramangala 6th Block",
+      "pickupAt": "2026-03-17T18:42:00+05:30",
+      "dropAt": "2026-03-17T19:06:00+05:30",
+      "fare": 158,
+      "durationMins": 24
+    },
+    {
+      "id": "r9",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "ActFirst HQ - HSR Layout",
+      "destination": "Home - Koramangala 6th Block",
+      "pickupAt": "2026-03-18T18:29:00+05:30",
+      "dropAt": "2026-03-18T19:08:00+05:30",
+      "fare": 311,
+      "durationMins": 39
+    },
+    {
+      "id": "r10",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "ActFirst HQ - HSR Layout",
+      "destination": "Home - Koramangala 6th Block",
+      "pickupAt": "2026-03-19T18:37:00+05:30",
+      "dropAt": "2026-03-19T19:14:00+05:30",
+      "fare": 228,
+      "durationMins": 37
+    },
+    {
+      "id": "r11",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "ActFirst HQ - HSR Layout",
+      "destination": "Home - Koramangala 6th Block",
+      "pickupAt": "2026-03-20T18:30:00+05:30",
+      "dropAt": "2026-03-20T19:02:00+05:30",
+      "fare": 298,
+      "durationMins": 32
+    },
+    {
+      "id": "r12",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "pickupAt": "2026-03-13T09:18:00+05:30",
+      "dropAt": "2026-03-13T09:43:00+05:30",
+      "fare": 134,
+      "durationMins": 25
+    }
+  ],
+  "dismissals": [
+    {
+      "id": "d-1774147312787",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "dismissedAt": "2026-03-22T02:41:52.787Z",
+      "reason": "Dismissed from dashboard"
+    },
+    {
+      "id": "d1",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "dismissedAt": "2026-03-12T09:04:00+05:30",
+      "reason": "Working from home"
+    }
+  ],
+  "confirmations": [
+    {
+      "id": "c-1774148425345",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T03:00:25.345Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774148424277",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T03:00:24.277Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147602355",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:46:42.355Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147581088",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:46:21.088Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147523207",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:45:23.207Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147522299",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:45:22.299Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147521577",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:45:21.577Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147520472",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:45:20.472Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147519345",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:45:19.345Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147468333",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:44:28.333Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147467796",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:44:27.796Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147467188",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:44:27.188Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147395346",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:15.346Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147394412",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:14.412Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147393234",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:13.234Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147391742",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:11.742Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147391033",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:11.032Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147389952",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:09.951Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147389573",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:09.573Z",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147388929",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:08.929Z",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147387998",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:43:07.998Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c-1774147320681",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-22T02:42:00.681Z",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-22T08:55:00+05:30"
+    },
+    {
+      "id": "c1",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "confirmedAt": "2026-03-20T09:08:00+05:30",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "pickup": "Home - Koramangala 6th Block",
+      "destination": "ActFirst HQ - HSR Layout",
+      "suggestedLeaveAt": "2026-03-20T08:55:00+05:30"
+    }
+  ],
+  "edits": [
+    {
+      "id": "e1",
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "field": "suggestedLeaveAt",
+      "previousValue": "2026-03-18T08:56:00+05:30",
+      "nextValue": "2026-03-18T09:00:00+05:30",
+      "editedAt": "2026-03-18T08:50:00+05:30"
+    }
+  ],
+  "cooldowns": {},
+  "cachedQuotes": [
+    {
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "platform": "Uber",
+      "rideType": "Cab",
+      "etaMinutes": 42,
+      "pickupWaitMinutes": 4,
+      "price": 332,
+      "surgeMultiplier": 1.3,
+      "cachedAt": "2026-03-23T10:43:23.992Z"
+    },
+    {
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "platform": "Ola",
+      "rideType": "Auto",
+      "etaMinutes": 50,
+      "pickupWaitMinutes": 6,
+      "price": 246,
+      "surgeMultiplier": 1.2,
+      "cachedAt": "2026-03-22T09:05:00+05:30"
+    },
+    {
+      "routeKey": "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
+      "platform": "Rapido",
+      "rideType": "Bike",
+      "etaMinutes": 39,
+      "pickupWaitMinutes": 4,
+      "price": 175,
+      "surgeMultiplier": 1.1,
+      "cachedAt": "2026-03-21T09:03:00+05:30"
+    }
+  ]
+}
