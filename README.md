@@ -1,4 +1,4 @@
-# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/)
+# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/) - [video](https://www.loom.com/share/9737ac4d688b4b238faaee90d80d5af7)
 
 A proactive ride assistant built with TypeScript, Express, Next.js, Tailwind, and shadcn-style UI primitives.
 
@@ -16,6 +16,7 @@ A proactive ride assistant built with TypeScript, Express, Next.js, Tailwind, an
   Implemented as the primary provider for the surfaced quote, fare estimate, surge multiplier, and ETA through browser automation.
 - Ola and Rapido:
   Left optional and displayed as not enabled, which still satisfies the assignment requirement to integrate at least one platform.
+- Uber and Ola do not expose a simple free public API for this assignment flow.
 
 ## Uber automation setup
 
