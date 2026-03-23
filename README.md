@@ -1,4 +1,4 @@
-# Act First Ride Assistant
+# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/)
 
 A proactive ride assistant built with TypeScript, Express, Next.js, Tailwind, and shadcn-style UI primitives.
 
