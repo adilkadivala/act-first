@@ -1,4 +1,4 @@
-import { addMinutes, formatISO, getDay, getHours, getMinutes, isAfter, isWithinInterval, subMinutes } from "date-fns";
+import { addMinutes, formatISO, getDay, getHours, getMinutes, isAfter, subMinutes } from "date-fns";
 import { learnRidePatterns } from "@/lib/rides/behavior";
 import { getPlatformData, getTrafficSnapshot } from "@/lib/rides/liveData";
 import { readMemory, updateCachedQuotes, type UserMemoryStore } from "@/lib/rides/memory";
@@ -8,9 +8,11 @@ function minutesSinceMidnight(date: Date) {
   return getHours(date) * 60 + getMinutes(date);
 }
 
-async function buildSuggestion(currentTime: Date, memory: UserMemoryStore): Promise<RideSuggestion> {
+let rideRefreshCounter = 0;
+
+async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refreshIndex: number): Promise<RideSuggestion> {
   const patterns = learnRidePatterns(memory.history, memory, currentTime);
-  const traffic = getTrafficSnapshot();
+  const traffic = await getTrafficSnapshot(memory);
   const { quotes, integrations, cacheableQuotes } = await getPlatformData(memory);
   if (cacheableQuotes.length > 0) {
     await updateCachedQuotes(cacheableQuotes);
@@ -45,36 +47,40 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore): Prom
   const baseConfidence = 0.62 + Math.min(0.22, rankedPattern.recencyWeightedScore / 10) + (traffic.delayMinutes >= 15 ? 0.12 : 0);
   const confidence = Math.max(0, Math.min(0.98, baseConfidence - dismissalPenalty));
   const confidenceThreshold = 0.7;
-  const shouldTrigger =
-    isWithinInterval(currentTime, {
-      start: subMinutes(targetDeparture, 15),
-      end: departureWindowEnd
-    }) &&
-    !cooldownActive &&
-    confidence >= confidenceThreshold &&
-    !memory.history.some((entry) => {
-      const pickup = new Date(entry.pickupAt);
-      return pickup.toDateString() === currentTime.toDateString();
-    });
+  const rotatedQuotes = quotes.map((quote, index) => ({
+    ...quote,
+    etaMinutes: quote.etaMinutes + ((refreshIndex + index) % 3),
+    price: quote.price + ((refreshIndex + index) % 2) * 10
+  }));
+  const preferredQuote = rotatedQuotes[refreshIndex % rotatedQuotes.length];
+  const shouldTrigger = true;
   const incompleteData = integrations.some((integration) => integration.status !== "live");
   const fallbackMessage = incompleteData
     ? "Some platform data is partial or cached. The assistant still recommends the best available option and labels confidence per provider."
     : undefined;
 
+  const suggestionReasonVariants = [
+    "Weekday commute detected. Mock data refresh produced a new recommendation.",
+    "Routine commute window is active. Showing the next dummy ride option.",
+    "Traffic-adjusted commute suggestion refreshed from mock ride data."
+  ];
+
   return {
     reason:
-      "Weekday morning commute detected. Traffic is 20 minutes above the usual route average and no ride has been booked yet.",
+      traffic.delayMinutes >= 10
+        ? `${suggestionReasonVariants[refreshIndex % suggestionReasonVariants.length]} Traffic is ${traffic.delayMinutes} minutes above the usual route average.`
+        : suggestionReasonVariants[refreshIndex % suggestionReasonVariants.length],
     confidence: Number(confidence.toFixed(2)),
     shouldTrigger,
-    suggestedLeaveAt: formatISO(recommendedLeaveAt),
+    suggestedLeaveAt: formatISO(addMinutes(recommendedLeaveAt, refreshIndex % 5)),
     targetDepartureWindowStart: formatISO(departureWindowStart),
     targetDepartureWindowEnd: formatISO(departureWindowEnd),
     pickup: rankedPattern.pickup,
     destination: rankedPattern.destination,
-    preferredPlatform: rankedPattern.preferredPlatform,
-    preferredRideType: rankedPattern.preferredRideType,
+    preferredPlatform: preferredQuote.platform,
+    preferredRideType: preferredQuote.rideType,
     traffic,
-    quotes,
+    quotes: rotatedQuotes,
     integrations,
     incompleteData,
     fallbackMessage,
@@ -96,6 +102,8 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore): Prom
       reasons: [
         "The top morning route has the highest recency-weighted score.",
         "Traffic is significantly above average, so the leave time is adjusted earlier.",
+        "Demo mode is enabled, so the ride suggestion is always shown from dummy data.",
+        `Refresh variation #${refreshIndex + 1} is active.`,
         cooldownActive
           ? "A recent dismissal is suppressing this suggestion until the cooldown expires."
           : "No active cooldown is suppressing the suggestion."
@@ -107,9 +115,10 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore): Prom
 export async function getRideAssistantState(
   currentTime = new Date()
 ): Promise<RideAssistantResponse> {
+  const refreshIndex = rideRefreshCounter++;
   const memory = await readMemory();
   const learnedPatterns = learnRidePatterns(memory.history, memory, currentTime);
-  const suggestion = await buildSuggestion(currentTime, memory);
+  const suggestion = await buildSuggestion(currentTime, memory, refreshIndex);
   return {
     generatedAt: new Date().toISOString(),
     currentTime: currentTime.toISOString(),

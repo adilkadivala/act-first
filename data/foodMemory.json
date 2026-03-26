@@ -1,0 +1,194 @@
+{
+  "history": [
+    {
+      "id": "ord-001",
+      "platform": "Swiggy",
+      "restaurant": "Paradise Biryani",
+      "orderedAt": "2026-03-20T20:27:00+05:30",
+      "deliveredInMinutes": 42,
+      "total": 430,
+      "items": [
+        {
+          "name": "Chicken Dum Biryani",
+          "cuisine": "Biryani",
+          "quantity": 1,
+          "price": 320
+        },
+        {
+          "name": "Double Ka Meetha",
+          "cuisine": "Dessert",
+          "quantity": 1,
+          "price": 110
+        }
+      ]
+    },
+    {
+      "id": "ord-002",
+      "platform": "Zomato",
+      "restaurant": "Mehfil",
+      "orderedAt": "2026-03-13T20:29:00+05:30",
+      "deliveredInMinutes": 36,
+      "total": 390,
+      "items": [
+        {
+          "name": "Chicken 65 Biryani",
+          "cuisine": "Biryani",
+          "quantity": 1,
+          "price": 310
+        },
+        {
+          "name": "Raita",
+          "cuisine": "Sides",
+          "quantity": 1,
+          "price": 80
+        }
+      ]
+    },
+    {
+      "id": "ord-003",
+      "platform": "Swiggy",
+      "restaurant": "Bowl Company",
+      "orderedAt": "2026-03-16T20:20:00+05:30",
+      "deliveredInMinutes": 29,
+      "total": 280,
+      "items": [
+        {
+          "name": "Paneer Rice Bowl",
+          "cuisine": "Healthy",
+          "quantity": 1,
+          "price": 280
+        }
+      ]
+    },
+    {
+      "id": "ord-004",
+      "platform": "Zomato",
+      "restaurant": "FreshMenu",
+      "orderedAt": "2026-03-09T20:16:00+05:30",
+      "deliveredInMinutes": 31,
+      "total": 260,
+      "items": [
+        {
+          "name": "Grilled Chicken Salad",
+          "cuisine": "Healthy",
+          "quantity": 1,
+          "price": 260
+        }
+      ]
+    },
+    {
+      "id": "ord-005",
+      "platform": "Swiggy",
+      "restaurant": "Paradise Biryani",
+      "orderedAt": "2026-03-06T20:33:00+05:30",
+      "deliveredInMinutes": 34,
+      "total": 450,
+      "items": [
+        {
+          "name": "Chicken Dum Biryani",
+          "cuisine": "Biryani",
+          "quantity": 1,
+          "price": 330
+        },
+        {
+          "name": "Apollo Fish",
+          "cuisine": "Andhra",
+          "quantity": 1,
+          "price": 120
+        }
+      ]
+    },
+    {
+      "id": "ord-006",
+      "platform": "Swiggy",
+      "restaurant": "Bowl Company",
+      "orderedAt": "2026-03-02T20:24:00+05:30",
+      "deliveredInMinutes": 28,
+      "total": 290,
+      "items": [
+        {
+          "name": "Peri Peri Chicken Bowl",
+          "cuisine": "Healthy",
+          "quantity": 1,
+          "price": 290
+        }
+      ]
+    },
+    {
+      "id": "ord-007",
+      "platform": "Zomato",
+      "restaurant": "NIC Ice Creams",
+      "orderedAt": "2026-03-01T20:55:00+05:30",
+      "deliveredInMinutes": 22,
+      "total": 180,
+      "items": [
+        {
+          "name": "Tender Coconut Ice Cream",
+          "cuisine": "Dessert",
+          "quantity": 2,
+          "price": 90
+        }
+      ]
+    },
+    {
+      "id": "ord-008",
+      "platform": "Swiggy",
+      "restaurant": "Paradise Biryani",
+      "orderedAt": "2026-02-27T20:26:00+05:30",
+      "deliveredInMinutes": 37,
+      "total": 415,
+      "items": [
+        {
+          "name": "Chicken Dum Biryani",
+          "cuisine": "Biryani",
+          "quantity": 1,
+          "price": 320
+        },
+        {
+          "name": "Mirchi Ka Salan",
+          "cuisine": "Sides",
+          "quantity": 1,
+          "price": 95
+        }
+      ]
+    }
+  ],
+  "lastConfirmedAt": "2026-03-26T11:55:11.970Z",
+  "dismissals": [
+    {
+      "suggestionId": "food-2026-03-26T11:55:10.198Z",
+      "timestamp": "2026-03-26T11:55:13.399Z",
+      "reason": "dismissed-from-dashboard"
+    },
+    {
+      "suggestionId": "food-2026-03-26T11:55:00.628Z",
+      "timestamp": "2026-03-26T11:55:01.193Z",
+      "reason": "dismissed-from-dashboard"
+    },
+    {
+      "suggestionId": "food-dismissal-1",
+      "timestamp": "2026-03-18T20:19:00+05:30",
+      "reason": "Ate out with friends"
+    }
+  ],
+  "edits": [
+    {
+      "suggestionId": "food-edit-1",
+      "timestamp": "2026-03-20T20:24:00+05:30",
+      "field": "items",
+      "from": "Chicken Dum Biryani",
+      "to": "Chicken Dum Biryani, Double Ka Meetha"
+    }
+  ],
+  "feedback": {
+    "preferredCuisines": {
+      "Biryani": 0.6,
+      "Healthy": 0.3
+    },
+    "restaurantAffinity": {
+      "Paradise Biryani": 0.9500000000000001,
+      "Bowl Company": 0.35
+    }
+  },
+  "lastSuggestedAt": "2026-03-26T14:24:48.912Z"
+}

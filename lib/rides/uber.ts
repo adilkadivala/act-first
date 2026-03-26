@@ -43,6 +43,11 @@ async function runScraperScript(input: {
   destinationLatitude: number;
   destinationLongitude: number;
 }): Promise<ScrapedUberQuote> {
+  if (!process.env.UBER_SCRAPER_ALLOW_EXEC) {
+    throw new Error(
+      "Uber scraper execution is disabled by default. Provide UBER_SCRAPER_JSON_PATH (JSON handoff) or set UBER_SCRAPER_ALLOW_EXEC to run the example automation."
+    );
+  }
   const scriptPath = process.env.UBER_SCRAPER_SCRIPT ?? path.join(process.cwd(), "scripts", "uber-playwright.example.mjs");
   const { stdout } = await execFile("node", [
     scriptPath,
@@ -74,14 +79,13 @@ export async function fetchUberQuote(input: {
 }> {
   const pickup = getKnownLocation(input.pickup);
   const destination = getKnownLocation(input.destination);
-
   if (!pickup || !destination) {
     return {
       integration: {
         platform: "Uber",
-        status: "fallback",
-        message: "Uber automation is configured, but this route is missing mapped coordinates. Using fallback quote.",
-        fallbackUsed: true
+        status: "unavailable",
+        message: "Uber route is missing mapped coordinates, so live quote cannot be fetched.",
+        fallbackUsed: false
       }
     };
   }
@@ -99,6 +103,27 @@ export async function fetchUberQuote(input: {
           destinationLongitude: destination.longitude
         });
     const quote = normalizeScrapedQuote(scraped);
+
+    // #region debug uber adapter
+    fetch("http://127.0.0.1:7881/ingest/7c94cf26-d1ea-490f-ba6d-e6280f224d2b", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "471295" },
+      body: JSON.stringify({
+        sessionId: "471295",
+        runId: "pre-fix",
+        hypothesisId: "H2_uber_live_source",
+        location: "rideassistant/lib/rides/uber.ts:fetchUberQuote",
+        message: "Uber adapter returned quote",
+        data: {
+          manualJsonProvided: !!manualPath,
+          allowExecEnabled: !!process.env.UBER_SCRAPER_ALLOW_EXEC,
+          integrationStatus: "live",
+          hasQuote: !!quote
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
 
     return {
       integration: {
@@ -123,12 +148,30 @@ export async function fetchUberQuote(input: {
       }
     };
   } catch {
+    // #region debug uber adapter
+    fetch("http://127.0.0.1:7881/ingest/7c94cf26-d1ea-490f-ba6d-e6280f224d2b", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "471295" },
+      body: JSON.stringify({
+        sessionId: "471295",
+        runId: "pre-fix",
+        hypothesisId: "H2_uber_live_source",
+        location: "rideassistant/lib/rides/uber.ts:fetchUberQuote",
+        message: "Uber adapter failed to return quote",
+        data: {
+          manualJsonProvided: !!process.env.UBER_SCRAPER_JSON_PATH,
+          allowExecEnabled: !!process.env.UBER_SCRAPER_ALLOW_EXEC
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
     return {
       integration: {
         platform: "Uber",
-        status: "fallback",
-        message: "Uber browser automation failed or is not configured. Using fallback quote.",
-        fallbackUsed: true
+        status: "unavailable",
+        message: "Uber live quote unavailable (scraper failed or not configured).",
+        fallbackUsed: false
       }
     };
   }

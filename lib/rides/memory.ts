@@ -85,18 +85,7 @@ const defaultMemory: UserMemoryStore = {
     }
   ],
   cooldowns: {},
-  cachedQuotes: [
-    {
-      routeKey: "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout",
-      platform: "Rapido",
-      rideType: "Bike",
-      etaMinutes: 39,
-      pickupWaitMinutes: 4,
-      price: 175,
-      surgeMultiplier: 1.1,
-      cachedAt: "2026-03-21T09:03:00+05:30"
-    }
-  ]
+  cachedQuotes: []
 };
 
 function buildRouteKey(pickup: string, destination: string) {

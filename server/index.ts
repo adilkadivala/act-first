@@ -1,5 +1,6 @@
 import express from "express";
 import next from "next";
+import { confirmFoodSuggestion, dismissFoodSuggestion, editFoodSuggestion, getFoodAssistantState } from "@/lib/food/proactive";
 import { getRideAssistantState } from "@/lib/rides/proactive";
 import { recordConfirmation, recordDismissal, recordEdits } from "@/lib/rides/memory";
 import type { RideConfirmationPayload, RideDismissalPayload } from "@/lib/rides/types";
@@ -16,6 +17,10 @@ async function main() {
 
   server.get("/api/ride-assistant", async (_req, res) => {
     res.json(await getRideAssistantState());
+  });
+
+  server.get("/api/food-assistant", async (_req, res) => {
+    res.json(await getFoodAssistantState());
   });
 
   server.post("/api/ride-assistant/confirm", async (req, res) => {
@@ -75,6 +80,26 @@ async function main() {
       pickup,
       destination
     });
+  });
+
+  server.post("/api/food-assistant/confirm", async (req, res) => {
+    const { suggestionId } = (req.body ?? {}) as { suggestionId: string };
+    res.json(await confirmFoodSuggestion(suggestionId));
+  });
+
+  server.post("/api/food-assistant/dismiss", async (req, res) => {
+    const { suggestionId, reason } = (req.body ?? {}) as { suggestionId: string; reason: string };
+    res.json(await dismissFoodSuggestion(suggestionId, reason));
+  });
+
+  server.post("/api/food-assistant/edit", async (req, res) => {
+    const payload = (req.body ?? {}) as {
+      suggestionId: string;
+      field: "restaurant" | "items" | "scheduledFor";
+      from: string;
+      to: string;
+    };
+    res.json(await editFoodSuggestion(payload));
   });
 
   server.get("/api/health", (_req, res) => {

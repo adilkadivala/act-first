@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Act First Ride Assistant",
-  description: "A proactive commute assistant that learns routines and suggests rides before you ask."
+  title: "Proactive Assistant",
+  description: "A unified proactive assistant that learns ride and food routines, watches live conditions, and acts before the user asks."
 };
 
 export default function RootLayout({

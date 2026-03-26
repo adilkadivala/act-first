@@ -1,64 +1,60 @@
-# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/) - [video](https://www.loom.com/share/4c6f2faace2d46cd83d94dada4608349)
+# Proactive Assistant
 
-A proactive ride assistant built with TypeScript, Express, Next.js, Tailwind, and shadcn-style UI primitives.
+A single Next.js + Express product that includes both assignment domains:
 
-## What it does
+- Ride assistant
+- Food assistant
 
-- Learns frequent ride destinations, departure windows, and ride preferences from seeded Uber, Ola, and Rapido history.
-- Detects when a ride is likely needed based on weekday morning commute behavior and an upcoming departure window.
-- Adjusts the recommendation using live traffic and an Uber quote.
-- Shows a one-tap confirm state without performing a real booking.
-- Persists dismissals, confirmations, edits, cooldowns, and cached provider quotes in `data/userMemory.json`.
+This repo now matches the hiring-manager feedback:
 
-## Implemented platform
+- It is one unified codebase, not two separate submissions.
+- Both domains use the same architecture: behavior memory, trigger logic, provider adapters, and graceful fallback handling.
+- Platform integrations are designed for real data through browser automation or JSON handoff first, with fallback data only when live fetches fail.
 
-- Uber:
-  Implemented as the primary provider for the surfaced quote, fare estimate, surge multiplier, and ETA through browser automation.
-- Ola and Rapido:
-  Left optional and displayed as not enabled, which still satisfies the assignment requirement to integrate at least one platform.
-- Uber and Ola do not expose a simple free public API for this assignment flow.
+## What the product does
 
-## Uber automation setup
+### Ride assistant
 
-1. Install Playwright locally:
+- Learns frequent destinations, departure windows, and preferred ride types from Uber, Ola, and Rapido history.
+- Detects when the weekday commute window is approaching and traffic is abnormally high.
+- Fetches an Uber quote through browser automation or JSON handoff.
+- Surfaces a prefilled suggestion with editable origin, destination, and departure time.
 
-```bash
-npm install -D playwright
-npx playwright install
-```
+### Food assistant
 
-2. Use one of these modes:
+- Learns favorite cuisines, items, restaurants, and dinner windows from Swiggy and Zomato order history.
+- Detects when the user is nearing the usual dinner window and delivery ETAs are slower than usual.
+- Fetches Swiggy history plus live offers through browser automation or JSON handoff.
+- Surfaces a prefilled order suggestion with editable restaurant, items, and time.
 
-- JSON handoff mode:
-  Set `UBER_SCRAPER_JSON_PATH` to a JSON file containing the latest scraped Uber quote.
-- Script mode:
-  Set `UBER_SCRAPER_SCRIPT` to your automation script path, or use the included `scripts/uber-playwright.example.mjs` starter.
+## Unified architecture
 
-3. Start the app with:
+Both assistants follow the same loop:
 
-```bash
-UBER_SCRAPER_SCRIPT=./scripts/uber-playwright.example.mjs npm run dev
-```
+1. Persist remembered behavior.
+2. Learn weighted patterns using frequency, recency, edits, confirmations, and dismissals.
+3. Evaluate whether the current moment crosses a confidence threshold.
+4. Ask provider adapters for live data.
+5. Fall back cleanly if providers are unavailable or partial.
+6. Show one-tap confirm UI with transparent reasoning and provider health.
 
-The backend will attempt browser automation first and fall back to sample data if the scraper is unavailable or fails.
+## Real-data integration
 
-## Assignment architecture
+There are no simple free public APIs for Uber or Swiggy for this flow, so this project uses automation-friendly adapters instead of pretending those APIs exist.
 
-- Trigger logic:
-  Watches weekday and time-of-day patterns, current departure window, live traffic, whether today already has a booked ride, and prior dismissals.
-- Anti-annoyance:
-  Uses a confidence threshold plus a 90-minute route cooldown after a dismissal.
-- Memory:
-  Stores trips, confirmations, edits, dismissals, cooldowns, and cached live quotes. Suggestions use recency decay and feedback penalties/boosts.
-- Failure handling:
-  Uber automation exposes live or fallback states, and optional providers are marked unavailable until implemented.
+### Ride
 
-## Stack
+- `lib/rides/uber.ts`
+- Accepts `UBER_SCRAPER_JSON_PATH` for JSON handoff from a browser session, or `UBER_SCRAPER_SCRIPT` for direct automation.
+- Included starter: `scripts/uber-playwright.example.mjs`
 
-- Next.js UI hosted by Express
-- Tailwind CSS
-- Reusable shadcn-style components
-- Shared TypeScript logic for behavior learning and proactive triggers
+### Food
+
+- `lib/food/swiggy.ts`
+- Accepts `SWIGGY_SCRAPER_JSON_PATH` for JSON handoff from a browser session, or `SWIGGY_SCRAPER_SCRIPT` for direct automation.
+- Included starter: `scripts/swiggy-playwright.example.mjs`
+
+Fallback data exists only so the UI remains runnable and so failure handling can be demonstrated. When the scrapers are configured, the adapters switch to live provider mode without changing the trigger or UI code.
 
 ## Run locally
 
@@ -69,14 +65,47 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Optional automation setup
+
+Install Playwright if you want to run the example browser adapters:
+
+```bash
+npm install -D playwright
+npx playwright install
+```
+
+### Ride example
+
+```bash
+UBER_SCRAPER_SCRIPT=./scripts/uber-playwright.example.mjs npm run dev
+```
+
+### Food example
+
+```bash
+SWIGGY_SCRAPER_SCRIPT=./scripts/swiggy-playwright.example.mjs npm run dev
+```
+
+You can also hand off fresh scraped JSON instead:
+
+```bash
+UBER_SCRAPER_JSON_PATH=/absolute/path/uber.json SWIGGY_SCRAPER_JSON_PATH=/absolute/path/swiggy.json npm run dev
+```
+
 ## API endpoints
 
 - `GET /api/ride-assistant`
 - `POST /api/ride-assistant/confirm`
 - `POST /api/ride-assistant/dismiss`
+- `GET /api/food-assistant`
+- `POST /api/food-assistant/confirm`
+- `POST /api/food-assistant/dismiss`
+- `POST /api/food-assistant/edit`
 - `GET /api/health`
 
-## Notes
+## Memory files
 
-- The current implementation uses seeded ride history and seeded live quote/traffic data for the assignment scenario.
-- Uber live quote fetching is isolated in `lib/rides/uber.ts`, so you can replace sample data with a Playwright scraper without changing the rest of the app.
+- `data/userMemory.json` for ride memory
+- `data/foodMemory.json` for food memory
+
+Both persist dismissals, confirmations, edits, and learned behavior inputs.
