@@ -1,4 +1,4 @@
-# Proactive Assistant  [live]()  --  [Video]()
+# Proactive Assistant  [live](https://act-first.vercel.app/)  --  [Video](https://www.loom.com/share/c861290c6b8c4e719b03b6131646e938)
 
 A single Next.js + Express product that includes both assignment domains:
 
