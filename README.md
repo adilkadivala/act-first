@@ -1,4 +1,4 @@
-# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/) - [video](https://www.loom.com/share/9737ac4d688b4b238faaee90d80d5af7)
+# Act First Ride Assistant  - [live](https://ride-assistant.vercel.app/) - [video](https://www.loom.com/share/4c6f2faace2d46cd83d94dada4608349)
 
 A proactive ride assistant built with TypeScript, Express, Next.js, Tailwind, and shadcn-style UI primitives.
 
