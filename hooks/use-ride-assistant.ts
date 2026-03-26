@@ -23,6 +23,7 @@ export function useRideAssistant() {
   const [confirmed, setConfirmed] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<RideFormState>({
     pickup: "",
@@ -32,13 +33,25 @@ export function useRideAssistant() {
 
   async function loadAssistant() {
     setLoading(true);
-    const response = await fetch("/api/ride-assistant");
-    const json = (await response.json()) as RideAssistantResponse;
-    setData(json);
-    setForm(createFormState(json));
-    setDismissed(false);
-    setLoading(false);
-    return json;
+    setError(null);
+    try {
+      const response = await fetch("/api/ride-assistant");
+      if (!response.ok) {
+        throw new Error(`Failed to load assistant (${response.status})`);
+      }
+      const json = (await response.json()) as RideAssistantResponse;
+      setData(json);
+      setForm(createFormState(json));
+      setDismissed(false);
+      return json;
+    } catch (loadError) {
+      const message = loadError instanceof Error ? loadError.message : "Failed to load assistant";
+      setError(message);
+      setData(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -96,6 +109,7 @@ export function useRideAssistant() {
     confirmed,
     dismissed,
     loading,
+    error,
     saving,
     confirmRide,
     dismissSuggestion,

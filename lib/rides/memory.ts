@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { rideHistory, type RidePlatform, type RideType } from "@/data/rideHistory";
 
-const memoryDir = path.join(process.cwd(), "data");
+const memoryDir = process.env.VERCEL ? path.join("/tmp", "actfirst-data") : path.join(process.cwd(), "data");
 const memoryFile = path.join(memoryDir, "userMemory.json");
 
 export interface RideDismissalRecord {
