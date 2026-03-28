@@ -40,6 +40,7 @@ export function useFoodAssistant() {
       setData(payload);
       setEditable(createEditableState(payload));
       setDismissed(false);
+      setConfirmed(false);
       return payload;
     } catch (loadError) {
       const message = loadError instanceof Error ? loadError.message : "Food assistant failed to load.";
@@ -101,7 +102,15 @@ export function useFoodAssistant() {
       await fetch("/api/food-assistant/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ suggestionId: data.suggestionId })
+        body: JSON.stringify({
+          suggestionId: data.suggestionId,
+          restaurant: editable.restaurant,
+          items: editable.items
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          scheduledFor: editable.scheduledFor
+        })
       });
 
       setConfirmed(true);

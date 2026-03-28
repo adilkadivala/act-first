@@ -1,4 +1,5 @@
-import { addMinutes, formatISO, getDay, getHours, getMinutes, isAfter, subMinutes } from "date-fns";
+import { addMinutes, formatISO, getDay, getHours, getMinutes, isAfter, isSameDay, subMinutes } from "date-fns";
+import { getRideScenarioTime, MOCK_SCENARIO_MODE } from "@/lib/mock-scenarios";
 import { learnRidePatterns } from "@/lib/rides/behavior";
 import { getPlatformData, getTrafficSnapshot } from "@/lib/rides/liveData";
 import { readMemory, updateCachedQuotes, type UserMemoryStore } from "@/lib/rides/memory";
@@ -8,15 +9,21 @@ function minutesSinceMidnight(date: Date) {
   return getHours(date) * 60 + getMinutes(date);
 }
 
-let rideRefreshCounter = 0;
-
-async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refreshIndex: number): Promise<RideSuggestion> {
-  const patterns = learnRidePatterns(memory.history, memory, currentTime);
-  const traffic = await getTrafficSnapshot(memory);
-  const { quotes, integrations, cacheableQuotes } = await getPlatformData(memory);
-  if (cacheableQuotes.length > 0) {
-    await updateCachedQuotes(cacheableQuotes);
+function hasConfirmedRouteToday(memory: UserMemoryStore, routeKey: string, currentTime: Date) {
+  if (MOCK_SCENARIO_MODE) {
+    return false;
   }
+  return memory.confirmations.some(
+    (confirmation) => confirmation.routeKey === routeKey && isSameDay(new Date(confirmation.confirmedAt), currentTime)
+  );
+}
+
+function isWithinDepartureWindow(currentMinutes: number, averageDepartureMinutes: number) {
+  return Math.abs(averageDepartureMinutes - currentMinutes) <= 30;
+}
+
+async function buildSuggestion(currentTime: Date, memory: UserMemoryStore): Promise<RideSuggestion> {
+  const patterns = learnRidePatterns(memory.history, memory, currentTime);
   const todayDay = getDay(currentTime);
   const currentMinutes = minutesSinceMidnight(currentTime);
 
@@ -24,9 +31,23 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refre
     patterns.find(
       (pattern) =>
         pattern.dayOfWeek === todayDay &&
-        pattern.timeBucket === "morning" &&
-        Math.abs(pattern.averageDepartureMinutes - currentMinutes) <= 30
+        isWithinDepartureWindow(currentMinutes, pattern.averageDepartureMinutes)
     ) ?? patterns[0];
+
+  const traffic = await getTrafficSnapshot({
+    memory,
+    pickup: rankedPattern.pickup,
+    destination: rankedPattern.destination,
+    currentTime
+  });
+  const { quotes, integrations, cacheableQuotes } = await getPlatformData({
+    memory,
+    pickup: rankedPattern.pickup,
+    destination: rankedPattern.destination
+  });
+  if (cacheableQuotes.length > 0) {
+    await updateCachedQuotes(cacheableQuotes);
+  }
 
   const targetDeparture = new Date(currentTime);
   targetDeparture.setHours(
@@ -41,46 +62,61 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refre
   const departureWindowEnd = addMinutes(targetDeparture, 10);
   const routeKey = `${rankedPattern.pickup}->${rankedPattern.destination}`;
   const cooldownUntil = memory.cooldowns[routeKey];
-  const cooldownActive = cooldownUntil ? isAfter(new Date(cooldownUntil), currentTime) : false;
+  const cooldownActive = MOCK_SCENARIO_MODE ? false : cooldownUntil ? isAfter(new Date(cooldownUntil), currentTime) : false;
   const recentDismissalCount = memory.dismissals.filter((dismissal) => dismissal.routeKey === routeKey).length;
   const dismissalPenalty = Math.min(0.35, recentDismissalCount * 0.12);
-  const baseConfidence = 0.62 + Math.min(0.22, rankedPattern.recencyWeightedScore / 10) + (traffic.delayMinutes >= 15 ? 0.12 : 0);
-  const confidence = Math.max(0, Math.min(0.98, baseConfidence - dismissalPenalty));
+  const withinWindow = isWithinDepartureWindow(currentMinutes, rankedPattern.averageDepartureMinutes);
+  const hasRideBookedToday = hasConfirmedRouteToday(memory, routeKey, currentTime);
+  const baseConfidence =
+    0.2 +
+    Math.min(0.22, rankedPattern.recencyWeightedScore / 10) +
+    (withinWindow ? 0.28 : 0) +
+    (traffic.delayMinutes >= 15 ? 0.12 : traffic.delayMinutes >= 7 ? 0.06 : 0);
+  const confidence = Math.max(0, Math.min(0.98, baseConfidence - dismissalPenalty - (hasRideBookedToday ? 0.4 : 0)));
   const confidenceThreshold = 0.7;
-  const rotatedQuotes = quotes.map((quote, index) => ({
-    ...quote,
-    etaMinutes: quote.etaMinutes + ((refreshIndex + index) % 3),
-    price: quote.price + ((refreshIndex + index) % 2) * 10
-  }));
-  const preferredQuote = rotatedQuotes[refreshIndex % rotatedQuotes.length];
-  const shouldTrigger = true;
+  const shouldTrigger = confidence >= confidenceThreshold && !cooldownActive && !hasRideBookedToday && withinWindow;
   const incompleteData = integrations.some((integration) => integration.status !== "live");
   const fallbackMessage = incompleteData
-    ? "Some platform data is partial or cached. The assistant still recommends the best available option and labels confidence per provider."
+    ? "Some provider data is unavailable, so this suggestion mixes live, cached, and historical estimates."
     : undefined;
+  const preferredQuote =
+    quotes.find((quote) => quote.platform === rankedPattern.preferredPlatform && quote.rideType === rankedPattern.preferredRideType) ??
+    [...quotes].sort((a, b) => a.price - b.price)[0];
 
-  const suggestionReasonVariants = [
-    "Weekday commute detected. Mock data refresh produced a new recommendation.",
-    "Routine commute window is active. Showing the next dummy ride option.",
-    "Traffic-adjusted commute suggestion refreshed from mock ride data."
-  ];
+  const reasons: string[] = [];
+  if (withinWindow) {
+    reasons.push("The current time is inside your usual departure window for this route.");
+  } else {
+    reasons.push("This route is your strongest learned pattern for the current day, even though the window is not exact.");
+  }
+  if (traffic.delayMinutes >= 7) {
+    reasons.push("Traffic is slower than your baseline, so the system recommends leaving earlier.");
+  }
+  if (cooldownActive) {
+    reasons.push("A recent dismissal is still cooling down this route.");
+  }
+  if (hasRideBookedToday) {
+    reasons.push("You already confirmed a ride for this route today, so another nudge is suppressed.");
+  }
+  if (!shouldTrigger && !cooldownActive && !hasRideBookedToday && !withinWindow) {
+    reasons.push("The assistant is holding back because the departure window is not close enough yet.");
+  }
 
   return {
-    reason:
-      traffic.delayMinutes >= 10
-        ? `${suggestionReasonVariants[refreshIndex % suggestionReasonVariants.length]} Traffic is ${traffic.delayMinutes} minutes above the usual route average.`
-        : suggestionReasonVariants[refreshIndex % suggestionReasonVariants.length],
+    reason: shouldTrigger
+      ? `You usually leave for ${rankedPattern.destination} around now${traffic.delayMinutes > 0 ? `, and traffic is ${traffic.delayMinutes} minutes above normal` : ""}.`
+      : "The assistant learned your routine but is holding this suggestion until the timing and confidence are strong enough.",
     confidence: Number(confidence.toFixed(2)),
     shouldTrigger,
-    suggestedLeaveAt: formatISO(addMinutes(recommendedLeaveAt, refreshIndex % 5)),
+    suggestedLeaveAt: formatISO(recommendedLeaveAt),
     targetDepartureWindowStart: formatISO(departureWindowStart),
     targetDepartureWindowEnd: formatISO(departureWindowEnd),
     pickup: rankedPattern.pickup,
     destination: rankedPattern.destination,
-    preferredPlatform: preferredQuote.platform,
-    preferredRideType: preferredQuote.rideType,
+    preferredPlatform: preferredQuote?.platform ?? rankedPattern.preferredPlatform,
+    preferredRideType: preferredQuote?.rideType ?? rankedPattern.preferredRideType,
     traffic,
-    quotes: rotatedQuotes,
+    quotes,
     integrations,
     incompleteData,
     fallbackMessage,
@@ -89,8 +125,8 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refre
       watchedSignals: [
         "weekday and time-of-day commute pattern",
         "departure window approaching",
-        "live traffic delay",
-        "whether a ride is already booked today",
+        "traffic delay versus route baseline",
+        "whether a ride is already confirmed today",
         "recent dismissals and cooldown"
       ],
       cooldownActive,
@@ -99,26 +135,16 @@ async function buildSuggestion(currentTime: Date, memory: UserMemoryStore, refre
       confidenceScore: Number(confidence.toFixed(2)),
       matchedPatternScore: rankedPattern.recencyWeightedScore,
       dismissalPenalty: Number(dismissalPenalty.toFixed(2)),
-      reasons: [
-        "The top morning route has the highest recency-weighted score.",
-        "Traffic is significantly above average, so the leave time is adjusted earlier.",
-        "Demo mode is enabled, so the ride suggestion is always shown from dummy data.",
-        `Refresh variation #${refreshIndex + 1} is active.`,
-        cooldownActive
-          ? "A recent dismissal is suppressing this suggestion until the cooldown expires."
-          : "No active cooldown is suppressing the suggestion."
-      ]
+      reasons
     }
   };
 }
 
-export async function getRideAssistantState(
-  currentTime = new Date()
-): Promise<RideAssistantResponse> {
-  const refreshIndex = rideRefreshCounter++;
+export async function getRideAssistantState(currentTime = MOCK_SCENARIO_MODE ? getRideScenarioTime() : new Date()): Promise<RideAssistantResponse> {
   const memory = await readMemory();
   const learnedPatterns = learnRidePatterns(memory.history, memory, currentTime);
-  const suggestion = await buildSuggestion(currentTime, memory, refreshIndex);
+  const suggestion = await buildSuggestion(currentTime, memory);
+
   return {
     generatedAt: new Date().toISOString(),
     currentTime: currentTime.toISOString(),
@@ -135,12 +161,12 @@ export async function getRideAssistantState(
       learningNotes: [
         "Trip patterns are frequency-weighted and recency-decayed so newer routines matter more.",
         "Dismissals create temporary cooldowns and reduce route confidence.",
-        "User edits are stored and can be replayed into future suggestions."
+        "User edits and confirmations are stored so preferred pickup, destination, and timing can adapt."
       ]
     },
     architecture: {
       triggerLogic: [
-        "Watch time-of-day, weekday routines, departure windows, traffic, and existing bookings.",
+        "Watch time-of-day, day-of-week routines, departure windows, traffic delay, and confirmed rides for today.",
         "Only trigger when confidence clears the threshold and the cooldown is not active.",
         "Suppress repeated nudges after a dismissal for 90 minutes on the same route."
       ],
@@ -150,9 +176,9 @@ export async function getRideAssistantState(
         "Keep edited pickup, destination, and time changes to improve later defaults."
       ],
       failureHandling: [
-        "Uber is integrated through an automation adapter that can read browser-scraped fare, ETA, and surge data.",
-        "If the scraper fails, changes structure, or is not configured, the UI falls back to cached or sample data without breaking the suggestion flow.",
-        "Every surfaced quote carries a confidence label so the user can see whether it is live, estimated, or cached."
+        "This submission intentionally uses mock, cached, and history-derived provider data rather than scraping live platforms.",
+        "If mock provider data is partial, the UI still falls back to recent cached quotes or historical estimates without breaking the flow.",
+        "Each surfaced quote carries a confidence label so the user can see whether it is cached or estimated."
       ]
     }
   };

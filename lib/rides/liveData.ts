@@ -1,17 +1,24 @@
+import { differenceInCalendarDays } from "date-fns";
 import type { CachedQuoteRecord, UserMemoryStore } from "@/lib/rides/memory";
 import type { PlatformIntegrationStatus, PlatformQuote, TrafficSnapshot } from "@/lib/rides/types";
-
-const routeKey = "Home - Koramangala 6th Block->ActFirst HQ - HSR Layout";
-const pickup = "Home - Koramangala 6th Block";
-const destination = "ActFirst HQ - HSR Layout";
 
 function average(nums: number[]): number | null {
   if (nums.length === 0) return null;
   return nums.reduce((sum, n) => sum + n, 0) / nums.length;
 }
 
+function buildRouteKey(pickup: string, destination: string) {
+  return `${pickup}->${destination}`;
+}
+
+function getEntriesForRoute(memory: UserMemoryStore, pickup: string, destination: string) {
+  return memory.history.filter((e) => e.pickup === pickup && e.destination === destination);
+}
+
 function estimateQuoteFromHistory(args: {
   memory: UserMemoryStore;
+  pickup: string;
+  destination: string;
   platform: PlatformQuote["platform"];
   rideType: PlatformQuote["rideType"];
 }): PlatformQuote | null {
@@ -19,8 +26,8 @@ function estimateQuoteFromHistory(args: {
     (e) =>
       e.platform === args.platform &&
       e.rideType === args.rideType &&
-      e.pickup === pickup &&
-      e.destination === destination
+      e.pickup === args.pickup &&
+      e.destination === args.destination
   );
   const etaMinutes = average(entries.map((e) => e.durationMins));
   const price = average(entries.map((e) => e.fare));
@@ -38,7 +45,12 @@ function estimateQuoteFromHistory(args: {
   };
 }
 
-function pickMostFrequentRideType(memory: UserMemoryStore, platform: PlatformQuote["platform"]): PlatformQuote["rideType"] | null {
+function pickMostFrequentRideType(
+  memory: UserMemoryStore,
+  pickup: string,
+  destination: string,
+  platform: PlatformQuote["platform"]
+): PlatformQuote["rideType"] | null {
   const counts = new Map<string, number>();
   for (const entry of memory.history) {
     if (entry.platform !== platform) continue;
@@ -52,37 +64,106 @@ function pickMostFrequentRideType(memory: UserMemoryStore, platform: PlatformQuo
   return best?.rideType ?? null;
 }
 
-export async function getTrafficSnapshot(memory: UserMemoryStore): Promise<TrafficSnapshot> {
-  const entriesForRoute = memory.history.filter((e) => e.pickup === pickup && e.destination === destination);
-  const averageDurationMinutes = Math.round(average(entriesForRoute.map((e) => e.durationMins)) ?? 0);
-  const liveDurationMinutes = averageDurationMinutes + 8;
-  const delayMinutes = Math.max(0, liveDurationMinutes - averageDurationMinutes);
-
-  const status: TrafficSnapshot["status"] = delayMinutes >= 15 ? "heavy" : delayMinutes >= 7 ? "moderate" : "clear";
-
-  // #region debug rides traffic snapshot
-  fetch("http://127.0.0.1:7881/ingest/7c94cf26-d1ea-490f-ba6d-e6280f224d2b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "471295" },
-    body: JSON.stringify({
-      sessionId: "471295",
-      runId: "pre-fix",
-      hypothesisId: "H3_rides_traffic_mock_removed",
-      location: "rideassistant/lib/rides/liveData.ts:getTrafficSnapshot",
-      message: "Computed traffic snapshot",
-      data: {
-        averageDurationMinutes,
-        liveDurationMinutes,
-        delayMinutes,
-        status
-      },
-      timestamp: Date.now()
-    })
-  }).catch(() => {});
-  // #endregion
+function getRecentCachedQuote(args: {
+  memory: UserMemoryStore;
+  routeKey: string;
+  platform: PlatformQuote["platform"];
+}): PlatformQuote | null {
+  const cached = args.memory.cachedQuotes.find(
+    (quote) => quote.routeKey === args.routeKey && quote.platform === args.platform
+  );
+  if (!cached) return null;
 
   return {
-    routeKey,
+    platform: cached.platform,
+    rideType: cached.rideType,
+    etaMinutes: cached.etaMinutes,
+    pickupWaitMinutes: cached.pickupWaitMinutes,
+    price: cached.price,
+    surgeMultiplier: cached.surgeMultiplier,
+    confidence: "cached",
+    sourceLabel: "Recent cached quote"
+  };
+}
+
+function buildFallbackStatus(args: {
+  memory: UserMemoryStore;
+  pickup: string;
+  destination: string;
+  routeKey: string;
+  platform: PlatformQuote["platform"];
+  rideType: PlatformQuote["rideType"];
+}): {
+  status: PlatformIntegrationStatus;
+  cacheableQuote?: CachedQuoteRecord;
+} {
+  const cached = getRecentCachedQuote({
+    memory: args.memory,
+    routeKey: args.routeKey,
+    platform: args.platform
+  });
+  if (cached) {
+    return {
+      status: {
+        platform: args.platform,
+        status: "partial",
+        message: `${args.platform} live quote unavailable; using the most recent cached quote for this route.`,
+        quote: cached,
+        fallbackUsed: true
+      }
+    };
+  }
+
+  const estimated = estimateQuoteFromHistory({
+    memory: args.memory,
+    pickup: args.pickup,
+    destination: args.destination,
+    platform: args.platform,
+    rideType: args.rideType
+  });
+  if (estimated) {
+    return {
+      status: {
+        platform: args.platform,
+        status: "fallback",
+        message: `${args.platform} live quote unavailable; using a history-derived estimate.`,
+        quote: estimated,
+        fallbackUsed: true
+      }
+    };
+  }
+
+  return {
+    status: {
+      platform: args.platform,
+      status: "unavailable",
+      message: `No live or historical quote is available for ${args.platform} on this route.`,
+      fallbackUsed: false
+    }
+  };
+}
+
+export async function getTrafficSnapshot(args: {
+  memory: UserMemoryStore;
+  pickup: string;
+  destination: string;
+  currentTime: Date;
+}): Promise<TrafficSnapshot> {
+  const entriesForRoute = getEntriesForRoute(args.memory, args.pickup, args.destination);
+  const averageDurationMinutes = Math.round(average(entriesForRoute.map((e) => e.durationMins)) ?? 0);
+  const recentSamples = entriesForRoute
+    .filter((entry) => differenceInCalendarDays(args.currentTime, new Date(entry.pickupAt)) <= 7)
+    .map((entry) => entry.durationMins);
+  const recentAverage = average(recentSamples);
+  const liveDurationMinutes = Math.max(
+    averageDurationMinutes,
+    Math.round((recentAverage ?? averageDurationMinutes) + 8)
+  );
+  const delayMinutes = Math.max(0, liveDurationMinutes - averageDurationMinutes);
+  const status: TrafficSnapshot["status"] = delayMinutes >= 15 ? "heavy" : delayMinutes >= 7 ? "moderate" : "clear";
+
+  return {
+    routeKey: buildRouteKey(args.pickup, args.destination),
     averageDurationMinutes,
     liveDurationMinutes,
     delayMinutes,
@@ -91,79 +172,53 @@ export async function getTrafficSnapshot(memory: UserMemoryStore): Promise<Traff
   };
 }
 
-type AdapterResult = {
-  status: PlatformIntegrationStatus;
-  cacheableQuote?: CachedQuoteRecord;
-};
-
-function unavailableAdapter(platform: PlatformQuote["platform"]): AdapterResult {
-  return {
-    status: {
-      platform,
-      status: "unavailable",
-      message: `No live integration configured for ${platform}.`,
-      fallbackUsed: false
-    }
-  };
-}
-
-function cachedOrEstimatedAdapter(args: {
+export async function getPlatformData(args: {
   memory: UserMemoryStore;
-  platform: PlatformQuote["platform"];
-  rideType: PlatformQuote["rideType"];
-}): AdapterResult {
-  const estimated = estimateQuoteFromHistory({ memory: args.memory, platform: args.platform, rideType: args.rideType });
-  if (!estimated) return unavailableAdapter(args.platform);
-
-  return {
-    status: {
-      platform: args.platform,
-      status: "fallback",
-      message: `${args.platform} live quote unavailable; using history-derived estimate.`,
-      quote: estimated,
-      fallbackUsed: true
-    }
-  };
-}
-
-export async function getPlatformData(memory: UserMemoryStore): Promise<{
+  pickup: string;
+  destination: string;
+}): Promise<{
   quotes: PlatformQuote[];
   integrations: PlatformIntegrationStatus[];
   cacheableQuotes: CachedQuoteRecord[];
 }> {
-  const inferredUberRideType = (pickMostFrequentRideType(memory, "Uber") ?? "Cab") as PlatformQuote["rideType"];
-  const inferredOlaRideType = (pickMostFrequentRideType(memory, "Ola") ?? "Auto") as PlatformQuote["rideType"];
-  const inferredRapidoRideType = (pickMostFrequentRideType(memory, "Rapido") ?? "Bike") as PlatformQuote["rideType"];
+  const routeKey = buildRouteKey(args.pickup, args.destination);
+  const inferredUberRideType = (pickMostFrequentRideType(args.memory, args.pickup, args.destination, "Uber") ?? "Cab") as PlatformQuote["rideType"];
+  const inferredOlaRideType = (pickMostFrequentRideType(args.memory, args.pickup, args.destination, "Ola") ?? "Auto") as PlatformQuote["rideType"];
+  const inferredRapidoRideType = (pickMostFrequentRideType(args.memory, args.pickup, args.destination, "Rapido") ?? "Bike") as PlatformQuote["rideType"];
 
-  const results: AdapterResult[] = [];
-  results.push(cachedOrEstimatedAdapter({ memory, platform: "Uber", rideType: inferredUberRideType }));
-  results.push(cachedOrEstimatedAdapter({ memory, platform: "Ola", rideType: inferredOlaRideType }));
-  results.push(cachedOrEstimatedAdapter({ memory, platform: "Rapido", rideType: inferredRapidoRideType }));
+  const results: Array<{ status: PlatformIntegrationStatus; cacheableQuote?: CachedQuoteRecord }> = [];
 
-  const platformSummary = results.map((r) => ({
-    platform: r.status.platform,
-    status: r.status.status,
-    fallbackUsed: r.status.fallbackUsed,
-    hasQuote: !!r.status.quote,
-    quoteConfidence: r.status.quote?.confidence,
-    quoteEta: r.status.quote?.etaMinutes
-  }));
-
-  // #region debug rides platform quote source
-  fetch("http://127.0.0.1:7881/ingest/7c94cf26-d1ea-490f-ba6d-e6280f224d2b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "471295" },
-    body: JSON.stringify({
-      sessionId: "471295",
-      runId: "pre-fix",
-      hypothesisId: "H1_rides_mock_fallback_removed",
-      location: "rideassistant/lib/rides/liveData.ts:getPlatformData",
-      message: "Platform quote source summary",
-      data: { mockMode: true, platformSummary },
-      timestamp: Date.now()
+  results.push(
+    buildFallbackStatus({
+      memory: args.memory,
+      pickup: args.pickup,
+      destination: args.destination,
+      routeKey,
+      platform: "Uber",
+      rideType: inferredUberRideType
     })
-  }).catch(() => {});
-  // #endregion
+  );
+
+  results.push(
+    buildFallbackStatus({
+      memory: args.memory,
+      pickup: args.pickup,
+      destination: args.destination,
+      routeKey,
+      platform: "Ola",
+      rideType: inferredOlaRideType
+    })
+  );
+  results.push(
+    buildFallbackStatus({
+      memory: args.memory,
+      pickup: args.pickup,
+      destination: args.destination,
+      routeKey,
+      platform: "Rapido",
+      rideType: inferredRapidoRideType
+    })
+  );
 
   return {
     quotes: results.flatMap((result) => (result.status.quote ? [result.status.quote] : [])),

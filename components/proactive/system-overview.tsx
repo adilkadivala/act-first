@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const pillars = [
   {
     title: "Shared Trigger Engine",
-    body: "Both assistants watch routine windows, live conditions, and recent feedback before surfacing a suggestion.",
+    body: "Both assistants watch routine windows, current conditions, and recent feedback before surfacing a suggestion.",
     icon: Clock3
   },
   {
@@ -13,8 +13,8 @@ const pillars = [
     icon: DatabaseZap
   },
   {
-    title: "Automation-First Adapters",
-    body: "Ride and food providers both try browser automation or JSON handoff first, then fall back cleanly if live fetches fail.",
+    title: "Mock Provider Layer",
+    body: "Ride and food providers both use realistic mock snapshots in this submission and fall back cleanly when data is partial.",
     icon: BrainCircuit
   },
   {

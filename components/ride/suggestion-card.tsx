@@ -41,7 +41,7 @@ export function SuggestionCard({
   onDismiss: () => void;
   onRefresh: () => void;
 }) {
-  const bestQuote = [...suggestion.quotes].sort((a, b) => a.etaMinutes - b.etaMinutes)[0];
+  const bestQuote = suggestion.quotes.length > 0 ? [...suggestion.quotes].sort((a, b) => a.etaMinutes - b.etaMinutes)[0] : null;
 
   return (
     <Card className="border-white/30 bg-white/90 text-slate-900 h-fit">
@@ -59,6 +59,13 @@ export function SuggestionCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {!suggestion.shouldTrigger ? (
+          <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            The ride assistant is holding this suggestion for now. It has enough history to predict the next route, but
+            cooldown, timing, or an already-confirmed ride is preventing a proactive nudge right now.
+          </div>
+        ) : null}
+
         {dismissed ? (
           <div className="rounded-[1.25rem] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             Suggestion dismissed. A 90 minute cooldown now prevents repeat nudges for this route.
@@ -146,11 +153,11 @@ export function SuggestionCard({
         <div>
           <div className="mb-3 flex items-center gap-2">
             <MapPin className="h-4 w-4 text-orange-500" />
-            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">Uber automated quote</h2>
+            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">Provider quotes</h2>
           </div>
           <div className="space-y-3">
             {suggestion.quotes.map((quote) => {
-              const isBest = quote.platform === bestQuote.platform && quote.rideType === bestQuote.rideType;
+              const isBest = bestQuote ? quote.platform === bestQuote.platform && quote.rideType === bestQuote.rideType : false;
               return (
                 <div
                   key={`${quote.platform}-${quote.rideType}`}
@@ -171,6 +178,9 @@ export function SuggestionCard({
                       <p className="text-sm text-muted-foreground">
                         Pickup in {quote.pickupWaitMinutes} min • Surge x{quote.surgeMultiplier.toFixed(1)} • {quote.sourceLabel}
                       </p>
+                      {isBest ? (
+                        <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-emerald-700">Recommended</p>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
@@ -182,7 +192,15 @@ export function SuggestionCard({
                       <p className="text-sm text-muted-foreground">Price</p>
                       <p className="font-semibold">Rs {quote.price}</p>
                     </div>
-                    <Button variant={isBest ? "default" : "outline"} disabled={saving} onClick={() => onConfirm(quote.platform, quote.rideType)}>
+                    <Button
+                      variant={isBest ? "default" : "outline"}
+                      className={
+                        isBest
+                          ? ""
+                          : "border-orange-200 bg-orange-50 text-orange-900 hover:bg-orange-100 hover:text-orange-950"
+                      }
+                      onClick={() => onConfirm(quote.platform, quote.rideType)}
+                    >
                       {confirmed === `${quote.platform} ${quote.rideType}` ? (
                         <>
                           <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -196,11 +214,17 @@ export function SuggestionCard({
                 </div>
               );
             })}
+            {suggestion.quotes.length === 0 ? (
+              <div className="rounded-[1.5rem] border border-dashed bg-white p-4 text-sm text-slate-600">
+                No provider quote is available for this route yet. The assistant will keep showing learned timing and
+                memory signals until a live or fallback quote is available.
+              </div>
+            ) : null}
           </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" onClick={onDismiss} disabled={saving}>
+          <Button variant="secondary" onClick={onDismiss} disabled={saving || !suggestion.shouldTrigger}>
             Dismiss
           </Button>
           <Button variant="outline" onClick={onRefresh} disabled={saving}>

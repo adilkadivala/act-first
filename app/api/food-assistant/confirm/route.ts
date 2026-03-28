@@ -4,6 +4,11 @@ import { confirmFoodSuggestion } from "@/lib/food/proactive";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  const { suggestionId } = (await request.json()) as { suggestionId: string };
-  return NextResponse.json(await confirmFoodSuggestion(suggestionId));
+  const payload = (await request.json()) as {
+    suggestionId: string;
+    restaurant: string;
+    items: string[];
+    scheduledFor: string;
+  };
+  return NextResponse.json(await confirmFoodSuggestion(payload));
 }

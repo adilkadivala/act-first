@@ -83,8 +83,13 @@ async function main() {
   });
 
   server.post("/api/food-assistant/confirm", async (req, res) => {
-    const { suggestionId } = (req.body ?? {}) as { suggestionId: string };
-    res.json(await confirmFoodSuggestion(suggestionId));
+    const payload = (req.body ?? {}) as {
+      suggestionId: string;
+      restaurant: string;
+      items: string[];
+      scheduledFor: string;
+    };
+    res.json(await confirmFoodSuggestion(payload));
   });
 
   server.post("/api/food-assistant/dismiss", async (req, res) => {

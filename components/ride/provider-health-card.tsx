@@ -7,7 +7,7 @@ export function ProviderHealthCard({ integrations }: { integrations: PlatformInt
       <CardHeader>
         <CardTitle>Provider health</CardTitle>
         <CardDescription className="text-slate-300">
-          Uber is wired through browser automation. Other providers remain optional and are labeled clearly.
+          Provider panels are intentionally mock-backed in this submission and clearly show degraded or fallback states.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

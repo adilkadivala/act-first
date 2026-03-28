@@ -24,7 +24,7 @@ export function HeroSection({
             Your ride is about to be late. We already did the thinking.
           </h1>
           <p className="mt-4 max-w-2xl text-base text-orange-50/90 sm:text-lg">
-            The system learned your weekday commute from Uber, Ola, and Rapido history, noticed the usual departure window is close, and adjusted for live traffic before you asked.
+            The system learned your weekday commute from Uber, Ola, and Rapido history, noticed the usual departure window is close, and adjusted for the current traffic snapshot before you asked.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

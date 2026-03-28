@@ -1,4 +1,5 @@
 import type { FoodMemoryStore, FoodProfile, FoodTriggerDecision } from "@/lib/food/types";
+import { MOCK_SCENARIO_MODE } from "@/lib/mock-scenarios";
 import { getDayKey, getMinutesOfDay, minutesBetween, parseClock } from "@/lib/food/time";
 
 export function evaluateFoodTrigger(
@@ -15,14 +16,17 @@ export function evaluateFoodTrigger(
   const withinWindow = minutesNow >= windowStart - 15 && minutesNow <= windowEnd;
   const noOrderYetInWindow = !hasOrderToday && minutesNow >= windowStart - 15;
   const cooldownActive =
+    !MOCK_SCENARIO_MODE &&
     memory.lastSuggestedAt !== undefined &&
     minutesBetween(now, new Date(memory.lastSuggestedAt)) < 120 &&
     new Date(memory.lastSuggestedAt).getTime() <= now.getTime();
-  const recentDismissal = memory.dismissals.some(
-    (dismissal) =>
-      new Date(dismissal.timestamp).getTime() <= now.getTime() &&
-      minutesBetween(now, new Date(dismissal.timestamp)) < 180
-  );
+  const recentDismissal =
+    !MOCK_SCENARIO_MODE &&
+    memory.dismissals.some(
+      (dismissal) =>
+        new Date(dismissal.timestamp).getTime() <= now.getTime() &&
+        minutesBetween(now, new Date(dismissal.timestamp)) < 180
+    );
 
   const reasons: string[] = [];
   if (withinWindow) {

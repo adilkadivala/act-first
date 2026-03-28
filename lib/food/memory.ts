@@ -85,15 +85,29 @@ export async function recordFoodEdit(input: {
   await writeFoodMemory(memory);
 }
 
-export async function recordFoodConfirmation(suggestionId: string) {
+export async function recordFoodConfirmation(input: {
+  suggestionId: string;
+  restaurant: string;
+  items: string[];
+  scheduledFor: string;
+}) {
   const memory = await readFoodMemory();
   memory.lastConfirmedAt = new Date().toISOString();
   delete memory.lastSuggestedAt;
-  memory.feedback.restaurantAffinity["Paradise Biryani"] =
-    (memory.feedback.restaurantAffinity["Paradise Biryani"] ?? 0) + 0.15;
+  memory.feedback.restaurantAffinity[input.restaurant] =
+    (memory.feedback.restaurantAffinity[input.restaurant] ?? 0) + 0.15;
+  for (const item of input.items) {
+    const matchingCuisine = memory.history
+      .flatMap((order) => order.items)
+      .find((orderItem) => orderItem.name === item)?.cuisine;
+    if (matchingCuisine) {
+      memory.feedback.preferredCuisines[matchingCuisine] =
+        (memory.feedback.preferredCuisines[matchingCuisine] ?? 0) + 0.08;
+    }
+  }
   await writeFoodMemory(memory);
   return {
-    suggestionId,
+    suggestionId: input.suggestionId,
     confirmedAt: memory.lastConfirmedAt
   };
 }

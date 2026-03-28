@@ -153,8 +153,13 @@
       ]
     }
   ],
-  "lastConfirmedAt": "2026-03-26T11:55:11.970Z",
+  "lastConfirmedAt": "2026-03-28T04:15:53.931Z",
   "dismissals": [
+    {
+      "suggestionId": "food-2026-03-27T14:45:00.000Z",
+      "timestamp": "2026-03-28T04:16:22.200Z",
+      "reason": "dismissed-from-dashboard"
+    },
     {
       "suggestionId": "food-2026-03-26T11:55:10.198Z",
       "timestamp": "2026-03-26T11:55:13.399Z",
@@ -182,13 +187,13 @@
   ],
   "feedback": {
     "preferredCuisines": {
-      "Biryani": 0.6,
-      "Healthy": 0.3
+      "Biryani": 0.6799999999999999,
+      "Healthy": 0.3,
+      "Dessert": 0.08
     },
     "restaurantAffinity": {
-      "Paradise Biryani": 0.9500000000000001,
+      "Paradise Biryani": 1.1,
       "Bowl Company": 0.35
     }
-  },
-  "lastSuggestedAt": "2026-03-26T14:43:33.599Z"
+  }
 }

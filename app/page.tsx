@@ -66,8 +66,8 @@ export default function HomePage() {
               Proactive Assistant
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200">
-              Switch between Ride and Food assistants using tabs. Each assistant now runs on stable mock-backed data for
-              demo consistency.
+              Switch between Ride and Food assistants using tabs. This submission uses mock provider data by design and
+              focuses on proactive logic, memory, and graceful fallback behavior.
             </p>
           </div>
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-1 text-sm leading-6 text-slate-200 backdrop-blur">
@@ -130,7 +130,8 @@ export default function HomePage() {
                 Smart dinner suggestions
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-200">
-                Learns dinner habits and surfaces proactive suggestions using mock provider data.
+                Learns dinner habits and surfaces proactive suggestions using intentional mock provider data and stored
+                behavior patterns.
               </p>
             </div>
             <FoodAssistantCard />
