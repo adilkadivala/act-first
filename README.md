@@ -1,6 +1,6 @@
 # Proactive Assistant  [live](https://act-first.vercel.app/)  --  [Video](https://www.loom.com/share/c861290c6b8c4e719b03b6131646e938)
 
-A single Next.js + Express product that includes both assignment domains:
+A act-first Ai who is not waiting for the user's prompt ! acts first based on the past data !
 
 - Ride assistant
 - Food assistant
